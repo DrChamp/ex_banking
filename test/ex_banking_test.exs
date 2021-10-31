@@ -1,5 +1,5 @@
 defmodule ExBankingTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   doctest ExBanking
 
   setup_all do
@@ -99,6 +99,7 @@ defmodule ExBankingTest do
     end
 
     test "test to get error response when to user does not exist" do
+      ExBanking.deposit("user1", 5, "usd")
       assert ExBanking.send("user1", "to", 5, "usd") == {:error, :receiver_does_not_exist}
     end
 

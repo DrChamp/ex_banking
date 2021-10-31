@@ -17,7 +17,7 @@ defmodule ExBanking do
     end
   end
 
-  def create_user(_), do: {:error, :wrong_arguments}
+  def create_user(_user), do: {:error, :wrong_arguments}
 
   @spec deposit(user :: String.t(), amount :: number, currency :: String.t()) ::
           {:ok, new_balance :: number}
@@ -27,7 +27,7 @@ defmodule ExBanking do
     User.request(user, {:deposit, amount, currency})
   end
 
-  def deposit(_, _, _), do: {:error, :wrong_arguments}
+  def deposit(_user, _amount, _currency), do: {:error, :wrong_arguments}
 
   @spec withdraw(user :: String.t(), amount :: number, currency :: String.t()) ::
           {:ok, new_balance :: number}
@@ -41,7 +41,7 @@ defmodule ExBanking do
     User.request(user, {:withdraw, amount, currency})
   end
 
-  def withdraw(_, _, _), do: {:error, :wrong_arguments}
+  def withdraw(_user, _amount, _currency), do: {:error, :wrong_arguments}
 
   @spec get_balance(user :: String.t(), currency :: String.t()) ::
           {:ok, balance :: number}
@@ -77,5 +77,5 @@ defmodule ExBanking do
     User.request(from_user, {:send, to_user, amount, currency}, opts)
   end
 
-  def send(_, _, _, _), do: {:error, :wrong_arguments}
+  def send(_from_user, _to_user, _amount, _currency), do: {:error, :wrong_arguments}
 end

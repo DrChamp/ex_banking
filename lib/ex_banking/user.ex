@@ -15,7 +15,6 @@ defmodule ExBanking.User do
   end
 
   def handle_call({:get_balance, currency}, _from, user_account) do
-    # Process.sleep(10000)
     {:reply, {:ok, Map.get(user_account, currency, 0.00)}, user_account}
   end
 
@@ -41,7 +40,7 @@ defmodule ExBanking.User do
         |> Decimal.round(2, :down)
         |> Decimal.to_float()
 
-      {:reply, {:ok, new_balance}, Map.put(user_account, currency, new_balance)}
+      {:reply, {:ok, new_balance}, %{user_account | currency => new_balance}}
     end
   end
 
@@ -65,7 +64,7 @@ defmodule ExBanking.User do
             |> Decimal.to_float()
 
           {:reply, {:ok, sender_balance, receiver_balance},
-           Map.put(user_account, currency, sender_balance)}
+           %{user_account | currency => sender_balance}}
 
         error ->
           {:reply, error, user_account}
