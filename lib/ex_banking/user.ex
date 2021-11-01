@@ -32,11 +32,7 @@ defmodule ExBanking.User do
   end
 
   def handle_call({:deposit, amount, currency}, _from, user_account) do
-    new_balance =
-      (Map.get(user_account.currencies, currency, 0) + amount)
-      |> Decimal.new()
-      |> Decimal.round(2, :down)
-      |> Decimal.to_float()
+    new_balance = ((Map.get(user_account.currencies, currency, 0) + amount) / 1) |> Float.floor(2)
 
     {:reply, {:ok, new_balance},
      %UserAccount{currencies: Map.put(user_account.currencies, currency, new_balance)}}
@@ -48,11 +44,7 @@ defmodule ExBanking.User do
     if old_balance - amount < 0 do
       {:reply, {:error, :not_enough_money}, user_account}
     else
-      new_balance =
-        (old_balance - amount)
-        |> Decimal.new()
-        |> Decimal.round(2, :down)
-        |> Decimal.to_float()
+      new_balance = ((old_balance - amount) / 1) |> Float.floor(2)
 
       {:reply, {:ok, new_balance},
        %UserAccount{currencies: %{user_account.currencies | currency => new_balance}}}
@@ -72,11 +64,7 @@ defmodule ExBanking.User do
 
       case request(to_user, {:deposit, amount, currency}, opts) do
         {:ok, receiver_balance} ->
-          sender_balance =
-            (old_balance - amount)
-            |> Decimal.new()
-            |> Decimal.round(2, :down)
-            |> Decimal.to_float()
+          sender_balance = ((old_balance - amount) / 1) |> Float.floor(2)
 
           {:reply, {:ok, sender_balance, receiver_balance},
            %UserAccount{currencies: %{user_account.currencies | currency => sender_balance}}}
