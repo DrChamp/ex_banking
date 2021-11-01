@@ -1,4 +1,8 @@
 defmodule ExBanking.UserSupervisor do
+  @moduledoc """
+  This is dynamic supervisor which will create user process dynamically
+  """
+
   use DynamicSupervisor
 
   def start_link(_opts) do

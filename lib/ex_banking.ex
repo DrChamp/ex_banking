@@ -1,11 +1,8 @@
 defmodule ExBanking do
   @moduledoc """
-  Documentation for `ExBanking`.
+  Exbanking has public functions exposed like create_user deposit withdraw get_balance and send
   """
 
-  @doc """
-  Hello world.
-  """
   alias ExBanking.User
   alias ExBanking.UserSupervisor
 

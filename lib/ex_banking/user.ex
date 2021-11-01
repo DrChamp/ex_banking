@@ -1,4 +1,17 @@
 defmodule ExBanking.User do
+  @moduledoc """
+  This module will create gen_server process for each user
+  and it will have all the  which ExBanking have
+  """
+
+  defmodule UserAccount do
+    @moduledoc """
+    This module is just to create a user account struct which
+    we will save in process memory
+    """
+    defstruct currencies: %{}
+  end
+
   use GenServer
 
   def start_link(user) do
@@ -11,25 +24,26 @@ defmodule ExBanking.User do
   end
 
   def init(_) do
-    {:ok, %{}}
+    {:ok, %UserAccount{}}
   end
 
   def handle_call({:get_balance, currency}, _from, user_account) do
-    {:reply, {:ok, Map.get(user_account, currency, 0.00)}, user_account}
+    {:reply, {:ok, Map.get(user_account.currencies, currency, 0.00)}, user_account}
   end
 
   def handle_call({:deposit, amount, currency}, _from, user_account) do
     new_balance =
-      (Map.get(user_account, currency, 0) + amount)
+      (Map.get(user_account.currencies, currency, 0) + amount)
       |> Decimal.new()
       |> Decimal.round(2, :down)
       |> Decimal.to_float()
 
-    {:reply, {:ok, new_balance}, Map.put(user_account, currency, new_balance)}
+    {:reply, {:ok, new_balance},
+     %UserAccount{currencies: Map.put(user_account.currencies, currency, new_balance)}}
   end
 
   def handle_call({:withdraw, amount, currency}, _from, user_account) do
-    old_balance = Map.get(user_account, currency, 0)
+    old_balance = Map.get(user_account.currencies, currency, 0)
 
     if old_balance - amount < 0 do
       {:reply, {:error, :not_enough_money}, user_account}
@@ -40,12 +54,13 @@ defmodule ExBanking.User do
         |> Decimal.round(2, :down)
         |> Decimal.to_float()
 
-      {:reply, {:ok, new_balance}, %{user_account | currency => new_balance}}
+      {:reply, {:ok, new_balance},
+       %UserAccount{currencies: %{user_account.currencies | currency => new_balance}}}
     end
   end
 
   def handle_call({:send, to_user, amount, currency}, _from, user_account) do
-    old_balance = Map.get(user_account, currency, 0)
+    old_balance = Map.get(user_account.currencies, currency, 0)
 
     if old_balance - amount < 0 do
       {:reply, {:error, :not_enough_money}, user_account}
@@ -64,7 +79,7 @@ defmodule ExBanking.User do
             |> Decimal.to_float()
 
           {:reply, {:ok, sender_balance, receiver_balance},
-           %{user_account | currency => sender_balance}}
+           %UserAccount{currencies: %{user_account.currencies | currency => sender_balance}}}
 
         error ->
           {:reply, error, user_account}
