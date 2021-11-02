@@ -10,7 +10,7 @@ defmodule ExBanking.UserSupervisor do
   end
 
   def init(_) do
-    DynamicSupervisor.init(strategy: :one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 10, max_seconds: 5)
   end
 
   def new_user(user) do

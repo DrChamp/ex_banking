@@ -38,8 +38,16 @@ defmodule ExBankingTest do
 
     test "test to get error response when there is too many requests" do
       ExBanking.create_user("deposit")
-      Enum.each(1..10_000, fn _x -> spawn(fn -> ExBanking.deposit("deposit", 5, "usd") end) end)
-      assert ExBanking.deposit("deposit", 5, "usd") == {:error, :too_many_requests_to_user}
+
+      error_count =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> ExBanking.deposit("deposit", 5, "usd") end)
+        end)
+        |> Enum.map(&Task.await/1)
+        |> Enum.count(fn result -> result !== {:error, :too_many_requests_to_user} end)
+
+      assert error_count >= 1
     end
   end
 
@@ -63,8 +71,16 @@ defmodule ExBankingTest do
 
     test "test to get error response when there is too many requests" do
       ExBanking.create_user("withdraw")
-      Enum.each(1..10_000, fn _x -> spawn(fn -> ExBanking.deposit("withdraw", 5, "usd") end) end)
-      assert ExBanking.withdraw("withdraw", 5, "usd") == {:error, :too_many_requests_to_user}
+
+      error_count =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> ExBanking.withdraw("withdraw", 5, "usd") end)
+        end)
+        |> Enum.map(&Task.await/1)
+        |> Enum.count(fn result -> result !== {:error, :too_many_requests_to_user} end)
+
+      assert error_count >= 1
     end
   end
 
@@ -83,8 +99,16 @@ defmodule ExBankingTest do
 
     test "test to get error response when there is too many requests" do
       ExBanking.create_user("balance")
-      Enum.each(1..10_000, fn _x -> spawn(fn -> ExBanking.deposit("balance", 5, "usd") end) end)
-      assert ExBanking.get_balance("balance", "usd") == {:error, :too_many_requests_to_user}
+
+      error_count =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> ExBanking.get_balance("balance", "usd") end)
+        end)
+        |> Enum.map(&Task.await/1)
+        |> Enum.count(fn result -> result !== {:error, :too_many_requests_to_user} end)
+
+      assert error_count >= 1
     end
   end
 
@@ -110,20 +134,32 @@ defmodule ExBankingTest do
     test "test to get error response when there is too many requests for sender" do
       ExBanking.create_user("sender")
       ExBanking.create_user("receiver")
-      Enum.each(1..10_000, fn _x -> spawn(fn -> ExBanking.deposit("sender", 5, "usd") end) end)
 
-      assert ExBanking.send("sender", "receiver", 5, "usd") ==
-               {:error, :too_many_requests_to_sender}
+      error_count =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> ExBanking.send("sender", "receiver", 5, "usd") end)
+        end)
+        |> Enum.map(&Task.await/1)
+        |> Enum.count(fn result -> result !== {:error, :too_many_requests_to_sender} end)
+
+      assert error_count >= 1
     end
 
     test "test to get error response when there is too many requests for receiver" do
       ExBanking.create_user("sender")
       ExBanking.create_user("receiver")
-      ExBanking.deposit("sender", 5, "usd")
-      Enum.each(1..10_000, fn _x -> spawn(fn -> ExBanking.deposit("receiver", 5, "usd") end) end)
+      ExBanking.deposit("sender", 1000, "usd")
 
-      assert ExBanking.send("sender", "receiver", 5, "usd") ==
-               {:error, :too_many_requests_to_receiver}
+      error_count =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> ExBanking.send("sender", "receiver", 5, "usd") end)
+        end)
+        |> Enum.map(&Task.await/1)
+        |> Enum.count(fn result -> result !== {:error, :too_many_requests_to_receiver} end)
+
+      assert error_count >= 1
     end
   end
 end

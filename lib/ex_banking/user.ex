@@ -28,23 +28,26 @@ defmodule ExBanking.User do
   end
 
   def handle_call({:get_balance, currency}, _from, user_account) do
-    {:reply, {:ok, Map.get(user_account.currencies, currency, 0.00)}, user_account}
+    {:reply, {:ok, Map.get(user_account.currencies, currency, 0.0)}, user_account}
   end
 
   def handle_call({:deposit, amount, currency}, _from, user_account) do
-    new_balance = ((Map.get(user_account.currencies, currency, 0) + amount) / 1) |> Float.floor(2)
+    new_balance =
+      (Map.get(user_account.currencies, currency, 0.0) + amount)
+      |> :erlang.float()
+      |> Float.floor(2)
 
     {:reply, {:ok, new_balance},
      %UserAccount{currencies: Map.put(user_account.currencies, currency, new_balance)}}
   end
 
   def handle_call({:withdraw, amount, currency}, _from, user_account) do
-    old_balance = Map.get(user_account.currencies, currency, 0)
+    old_balance = Map.get(user_account.currencies, currency, 0.0)
 
     if old_balance - amount < 0 do
       {:reply, {:error, :not_enough_money}, user_account}
     else
-      new_balance = ((old_balance - amount) / 1) |> Float.floor(2)
+      new_balance = (old_balance - amount) |> :erlang.float() |> Float.floor(2)
 
       {:reply, {:ok, new_balance},
        %UserAccount{currencies: %{user_account.currencies | currency => new_balance}}}
@@ -52,7 +55,7 @@ defmodule ExBanking.User do
   end
 
   def handle_call({:send, to_user, amount, currency}, _from, user_account) do
-    old_balance = Map.get(user_account.currencies, currency, 0)
+    old_balance = Map.get(user_account.currencies, currency, 0.0)
 
     if old_balance - amount < 0 do
       {:reply, {:error, :not_enough_money}, user_account}
@@ -64,7 +67,7 @@ defmodule ExBanking.User do
 
       case request(to_user, {:deposit, amount, currency}, opts) do
         {:ok, receiver_balance} ->
-          sender_balance = ((old_balance - amount) / 1) |> Float.floor(2)
+          sender_balance = (old_balance - amount) |> :erlang.float() |> Float.floor(2)
 
           {:reply, {:ok, sender_balance, receiver_balance},
            %UserAccount{currencies: %{user_account.currencies | currency => sender_balance}}}

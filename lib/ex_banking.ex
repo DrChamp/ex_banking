@@ -6,6 +6,14 @@ defmodule ExBanking do
   alias ExBanking.User
   alias ExBanking.UserSupervisor
 
+  @doc """
+  This function will create a user process to save currency and amount
+
+  Example
+  iex> ExBanking.create_user("user")
+  :ok
+
+  """
   @spec create_user(user :: String.t()) :: :ok | {:error, :wrong_arguments | :user_already_exists}
   def create_user(user) when is_binary(user) do
     case UserSupervisor.new_user(user) do
@@ -16,6 +24,14 @@ defmodule ExBanking do
 
   def create_user(_user), do: {:error, :wrong_arguments}
 
+  @doc """
+  This function will deposit money to a user process
+
+  Example
+  iex> ExBanking.deposit("user", 5, "usd")
+  {:ok, 5.0}
+
+  """
   @spec deposit(user :: String.t(), amount :: number, currency :: String.t()) ::
           {:ok, new_balance :: number}
           | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
@@ -26,6 +42,14 @@ defmodule ExBanking do
 
   def deposit(_user, _amount, _currency), do: {:error, :wrong_arguments}
 
+  @doc """
+  This function will withdraw money from a user process
+
+  Example
+  iex> ExBanking.withdraw("user", 5, "usd")
+  {:ok, 0.0}
+
+  """
   @spec withdraw(user :: String.t(), amount :: number, currency :: String.t()) ::
           {:ok, new_balance :: number}
           | {:error,
@@ -40,6 +64,14 @@ defmodule ExBanking do
 
   def withdraw(_user, _amount, _currency), do: {:error, :wrong_arguments}
 
+  @doc """
+  This function will return current balance from a user process for a particular currency
+
+  Example
+  iex> ExBanking.get_balance("user", "usd")
+  {:ok, 5.0}
+
+  """
   @spec get_balance(user :: String.t(), currency :: String.t()) ::
           {:ok, balance :: number}
           | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
@@ -49,6 +81,14 @@ defmodule ExBanking do
 
   def get_balance(_, _), do: {:error, :wrong_arguments}
 
+  @doc """
+  This function will send money from a user process to a another user process
+
+  Example
+  iex> ExBanking.send("sender", "receiver", 5, "usd")
+  {:ok, 5.0, 5.0}
+
+  """
   @spec send(
           from_user :: String.t(),
           to_user :: String.t(),
