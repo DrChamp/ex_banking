@@ -1,6 +1,5 @@
 defmodule ExBankingTest do
   use ExUnit.Case
-  doctest ExBanking
 
   setup_all do
     ExBanking.create_user("user1")
